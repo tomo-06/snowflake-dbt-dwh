@@ -1,0 +1,9 @@
+profiles.yml
+dbt/profiles.yml
+
+.env
+profiles.yml
+dbt/profiles.yml
+
+nyc_taxi/
+snowsql-*.bash
