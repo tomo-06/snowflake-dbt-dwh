@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: taxi_raw
+    database: NYC_TAXI
+    schema: RAW
+    tables:
+      - name: RAW_YELLOW_TRIPDATA
+        description: "NYC Yellow Taxi trip records loaded via COPY INTO"
+      - name: RAW_TAXI_ZONE_LOOKUP
+        description: "Taxi zone lookup (LocationID → borough/zone)"
