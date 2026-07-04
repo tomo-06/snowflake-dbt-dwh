@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_trips_enriched
+    description: >
+      stg_taxi__trips に stg_taxi__zones を pickup/dropoff で結合し、
+      location_id を borough/zone 名に解決したうえで、距離区分・時間帯区分を付与した中間モデル。
+    columns:
+      - name: pickup_borough
+        description: 乗車地点の borough（zones ルックアップで解決。未解決の場合 NULL）
+      - name: pickup_zone
+        description: 乗車地点の zone 名
+      - name: dropoff_borough
+        description: 降車地点の borough（zones ルックアップで解決。未解決の場合 NULL）
+      - name: dropoff_zone
+        description: 降車地点の zone 名
+      - name: trip_distance_category
+        description: trip_distance の区分（short:<2mi / medium:2-5mi / long:>=5mi）
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['short', 'medium', 'long']
+      - name: pickup_time_of_day
+        description: pickup_at の時間帯区分（morning/afternoon/evening/night）
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['morning', 'afternoon', 'evening', 'night']
