@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: taxi_raw
-    database: NYC_TAXI
+    database: TAXI_DWH
     schema: RAW
     tables:
       - name: RAW_YELLOW_TRIPDATA

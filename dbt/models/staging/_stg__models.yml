@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: stg_taxi__trips
+    description: >
+      NYC TLC Yellow Taxi のトリップ明細（1行=1トリップ）のステージングモデル。
+      生データの列名を snake_case にリネームし、エポックマイクロ秒のタイムスタンプを
+      TIMESTAMP_NTZ に変換、trip_minutes を派生列として追加している。
+    columns:
+      - name: vendor_id
+        description: レコードを提供したベンダー（TPEPプロバイダ）のコード。
+        tests:
+          - not_null
+      - name: pickup_location_id
+        description: 乗車地のTLCタクシーゾーンID（dim_location への外部キー候補）。
+      - name: dropoff_location_id
+        description: 降車地のTLCタクシーゾーンID（dim_location への外部キー候補）。
+      - name: pickup_at
+        description: 乗車日時（TIMESTAMP_NTZ、壁時計時刻）。
+        tests:
+          - not_null
+      - name: dropoff_at
+        description: 降車日時（TIMESTAMP_NTZ、壁時計時刻）。
+        tests:
+          - not_null
+      - name: trip_minutes
+        description: 乗車から降車までの所要時間（分）。pickup_at と dropoff_at の差分。
+      - name: passenger_count
+        description: ドライバーが申告した乗客数。
+      - name: trip_distance
+        description: タクシーメーターが記録した走行距離（マイル）。
+      - name: total_amount
+        description: 乗客に請求された合計金額（現金チップは含まない）。
+
+  - name: stg_taxi__zones
+    description: >
+      TLC タクシーゾーンのルックアップ（1行=1ゾーン）のステージングモデル。
+      location_id をキーに、行政区（borough）・ゾーン名・サービスゾーン区分を保持する。
+    columns:
+      - name: location_id
+        description: TLCタクシーゾーンの一意なID。trips の pickup/dropoff location と結合する。
+        tests:
+          - not_null
+          - unique
+      - name: borough
+        description: ゾーンが属するニューヨーク市の行政区（例：Manhattan, Queens）。
+      - name: zone
+        description: ゾーンの名称（例：Newark Airport, Jamaica Bay）。
+      - name: service_zone
+        description: サービスゾーン区分（例：Yellow Zone, Boro Zone, EWR）。
