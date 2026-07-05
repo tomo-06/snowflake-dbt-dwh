@@ -33,3 +33,7 @@ models:
   taxi_dwh:          # dbt_project.yml の name: と一致させる
     staging:
       +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

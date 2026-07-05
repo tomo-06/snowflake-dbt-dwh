@@ -1,0 +1,118 @@
+version: 2
+
+models:
+  - name: dim_vendor
+    description: "ベンダーディメンション。seed_vendor が素材。"
+    columns:
+      - name: vendor_key
+        description: "サロゲートキー（vendor_id から生成）"
+        data_tests: [not_null, unique]
+      - name: vendor_id
+        description: "ビジネスキー（TLC VendorID）"
+        data_tests: [not_null, unique]
+
+  - name: dim_payment_type
+    description: "支払方法ディメンション。seed_payment_type が素材。-1=Unknown 行を含む。"
+    columns:
+      - name: payment_type_key
+        description: "サロゲートキー（payment_type_id から生成）"
+        data_tests: [not_null, unique]
+      - name: payment_type_id
+        description: "ビジネスキー。-1 は NULL 由来の Unknown。"
+        data_tests: [not_null, unique]
+
+  - name: dim_rate_code
+    description: "レートコードディメンション。seed_rate_code が素材。-1=Unknown 行を含む。"
+    columns:
+      - name: rate_code_key
+        description: "サロゲートキー（rate_code_id から生成）"
+        data_tests: [not_null, unique]
+      - name: rate_code_id
+        description: "ビジネスキー。-1 は NULL 由来の Unknown、99 は TLC 明示的 Unknown。"
+        data_tests: [not_null, unique]
+
+  - name: dim_location
+    description: "ロケーションディメンション。stg_taxi__zones（265行）が素材。"
+    columns:
+      - name: location_key
+        description: "サロゲートキー（location_id から生成）"
+        data_tests: [not_null, unique]
+      - name: location_id
+        description: "ビジネスキー（TLC LocationID, 1-265）"
+        data_tests: [not_null, unique]
+
+  - name: dim_date
+    description: "日付ディメンション。2024年通年（date_spine で生成）。"
+    columns:
+      - name: date_key
+        description: "サロゲートキー（YYYYMMDD 整数）"
+        data_tests: [not_null, unique]
+      - name: date_day
+        description: "日付（date 型）"
+        data_tests: [not_null]
+
+  - name: fct_trips
+    description: "トリップファクト。粒度=1トリップ1行。int_trips_enriched が素材。"
+    columns:
+      - name: vendor_key
+        description: "→ dim_vendor"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_vendor')
+                field: vendor_key
+      - name: payment_type_key
+        description: "→ dim_payment_type"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_payment_type')
+                field: payment_type_key
+      - name: rate_code_key
+        description: "→ dim_rate_code"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_rate_code')
+                field: rate_code_key
+      - name: pickup_location_key
+        description: "→ dim_location（乗車地）"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_location')
+                field: location_key
+      - name: dropoff_location_key
+        description: "→ dim_location（降車地）"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_location')
+                field: location_key
+      - name: pickup_date_key
+        description: "→ dim_date（範囲外19件は既知の品質問題。warn で追跡）"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+              config:
+                severity: warn
+      - name: trip_distance_category
+        description: "縮退ディメンション（short/medium/long）"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['short', 'medium', 'long']
+      - name: pickup_time_of_day
+        description: "縮退ディメンション（morning/afternoon/evening/night）"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['morning', 'afternoon', 'evening', 'night']
